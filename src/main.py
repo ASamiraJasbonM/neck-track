@@ -1,6 +1,10 @@
+import sys
 import time
+from pathlib import Path
 
 import cv2
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.cam import Camera
 from src.decorador import PostureOverlay
@@ -68,3 +72,7 @@ def main():
 
     cam.release()
     cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    main()

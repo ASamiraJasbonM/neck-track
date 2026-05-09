@@ -3,16 +3,17 @@ import time
 
 import cv2
 import winsound
+from mediapipe import ImageFormat
+from mediapipe.framework.formats import landmark_pb2
+from mediapipe.python._framework_bindings.image import Image
+from mediapipe.python.solutions.drawing_utils import DrawingSpec, draw_landmarks
 from mediapipe.tasks.python import BaseOptions
 from mediapipe.tasks.python.vision import (
     PoseLandmarker,
     PoseLandmarkerOptions,
-    PoseLandmark,
     PoseLandmarksConnections,
-    drawing_utils,
     RunningMode,
 )
-from mediapipe.tasks.python.vision.core.image import Image, ImageFormat
 
 from src.calculos_pos import (
     detect_forward_head,
@@ -34,8 +35,9 @@ class PoseAnalyzer:
             num_poses=1,
         )
         self.detector = PoseLandmarker.create_from_options(options)
-        self.PoseLandmark = PoseLandmark
-        self.POSE_CONNECTIONS = PoseLandmarksConnections.POSE_LANDMARKS
+        self.POSE_CONNECTIONS = [
+            (c.start, c.end) for c in PoseLandmarksConnections.POSE_LANDMARKS
+        ]
 
         self.bad_posture_start_time = None
         self.alert_cooldown = 0
@@ -77,16 +79,25 @@ class PoseAnalyzer:
         if result.pose_landmarks and len(result.pose_landmarks) > 0:
             landmarks = result.pose_landmarks[0]
 
-            drawing_utils.draw_landmarks(
+            landmark_proto = landmark_pb2.NormalizedLandmarkList()
+            for lm in landmarks:
+                entry = landmark_proto.landmark.add()
+                entry.x = lm.x
+                entry.y = lm.y
+                entry.z = lm.z
+                if lm.visibility is not None:
+                    entry.visibility = lm.visibility
+                if lm.presence is not None:
+                    entry.presence = lm.presence
+
+            draw_landmarks(
                 image=frame,
-                landmark_list=landmarks,
+                landmark_list=landmark_proto,
                 connections=self.POSE_CONNECTIONS,
-                landmark_drawing_spec=drawing_utils.DrawingSpec(
+                landmark_drawing_spec=DrawingSpec(
                     color=(0, 255, 0), thickness=2, circle_radius=2
                 ),
-                connection_drawing_spec=drawing_utils.DrawingSpec(
-                    color=(0, 0, 255), thickness=2
-                ),
+                connection_drawing_spec=DrawingSpec(color=(0, 0, 255), thickness=2),
             )
 
             is_bad, angle = detect_forward_head(

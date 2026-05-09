@@ -2,6 +2,38 @@
 
 Analizador de postura cervical en tiempo real usando MediaPipe Pose Landmarker.
 
+## Requisitos del sistema
+
+- Python 3.9+
+- Windows (usa `winsound` para alertas sonoras)
+- Cámara web
+
+## Instalación
+
+```bash
+# Clonar el repositorio
+git clone https://github.com/tuusuario/neck-track.git
+cd neck-track
+
+# Crear entorno virtual
+python -m venv .venv
+
+# Activar entorno virtual (Windows)
+.venv\Scripts\activate
+
+# Instalar dependencias
+pip install -r requirements.txt
+```
+
+## Uso
+
+```bash
+python src/main.py
+```
+
+- `q` — salir
+- `r` — resetear estadísticas
+
 ## Estructura del proyecto
 
 neck-track/
